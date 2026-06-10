@@ -10,6 +10,16 @@ header {
     color: white;
     padding: 15px 20px;
     margin: -40px -40px 30px -40px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+header img {
+    height: 70px;
+}
+header div {
+    display: flex;
+    flex-direction: column;
 }
 header h1 {
     margin: 0;
@@ -27,8 +37,11 @@ a { display: block; margin: 8px 0; font-size: 1.1em; }
 <body>
 
 <header>
-    <h1>U3A Wellington City</h1>
-    <p>Universal Calendar Generator</p>
+    <img src="LOGO_U3A_Colour.jpg" alt="U3A Wellington City Logo">
+    <div>
+        <h1>U3A Wellington City</h1>
+        <p>Universal Calendar Generator</p>
+    </div>
 </header>
 
 <form id="form">
