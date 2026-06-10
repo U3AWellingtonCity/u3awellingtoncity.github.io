@@ -5,9 +5,9 @@
 <title>U3A Universal Calendar Generator</title>
 <style>
 body { font-family: Arial, sans-serif; margin: 40px; max-width: 750px; }
-input, textarea { width: 100%; padding: 8px; margin: 6px 0; }
+input { width: 100%; padding: 8px; margin: 6px 0; }
 .output { margin-top: 20px; padding: 10px; background: #f0f0f0; }
-a { display: block; margin: 6px 0; }
+a { display: block; margin: 8px 0; font-size: 1.1em; }
 </style>
 </head>
 <body>
@@ -39,14 +39,12 @@ a { display: block; margin: 6px 0; }
 <hr>
 
 <div class="output">
-<h3>Calendar Links</h3>
+<h3>Add to your calendar</h3>
 
-<a id="google" href="#">Google Calendar</a>
-<a id="outlook" href="#">Outlook / Office 365</a>
-<a id="yahoo" href="#">Yahoo Calendar</a>
-
-<p><strong>ICS File:</strong></p>
-<textarea id="ics" rows="10"></textarea>
+<a id="google" href="#" target="_blank">➤ Add to Google Calendar</a>
+<a id="outlook" href="#" target="_blank">➤ Add to Outlook / Office 365</a>
+<a id="yahoo" href="#" target="_blank">➤ Add to Yahoo Calendar</a>
+<a id="icsDownload" href="#" download="event.ics">➤ Download ICS file (Apple / Android / Desktop)</a>
 
 </div>
 
@@ -99,7 +97,12 @@ DESCRIPTION:Speaker: ${decodeURIComponent(speaker)}
 END:VEVENT
 END:VCALENDAR`;
 
-    document.getElementById("ics").value = ics;
+    const blob = new Blob([ics], { type: "text/calendar" });
+    const url = URL.createObjectURL(blob);
+
+    document.getElementById("icsDownload").href = url;
+    document.getElementById("icsDownload").download =
+        `${decodeURIComponent(title).replace(/[^a-z0-9]/gi,'_')}.ics`;
 }
 
 updateLinks();
