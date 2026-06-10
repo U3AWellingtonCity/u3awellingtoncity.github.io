@@ -8,6 +8,7 @@ body { font-family: Arial, sans-serif; margin: 40px; max-width: 750px; }
 textarea { width: 100%; height: 150px; }
 button { padding: 10px 20px; margin-top: 10px; }
 #output { margin-top: 20px; padding: 10px; background: #eef; }
+a { word-break: break-all; }
 </style>
 </head>
 <body>
@@ -18,7 +19,7 @@ button { padding: 10px 20px; margin-top: 10px; }
 
 <textarea id="input"></textarea>
 <br>
-<button onclick="process()">Generate Calendar Page + Link</button>
+<button onclick="process()">Generate Link</button>
 
 <div id="output"></div>
 
@@ -77,8 +78,11 @@ function process() {
     const start = pad(sh) + ":" + pad(sm);
     const end = pad(eh) + ":" + pad(em);
 
+    // IMPORTANT: Use your GitHub Pages URL here
+    const base = "https://u3awellingtoncity.github.io/u3a-calendar.html";
+
     const url =
-        "https://u3awellingtoncity.github.io/u3a-calendar.html?" +
+        base + "?" +
         "title=" + encodeURIComponent(title) +
         "&speaker=" + encodeURIComponent(speaker) +
         "&date=" + encodeURIComponent(dateISO) +
@@ -86,14 +90,10 @@ function process() {
         "&end=" + encodeURIComponent(end) +
         "&venue=" + encodeURIComponent(venue);
 
-    // Show the final link for copying
     out.innerHTML =
         `<p><strong>Your universal “Add to your calendar” link:</strong></p>
          <p><a href="${url}" target="_blank">${url}</a></p>
          <p>Copy this link and put it behind your “Add to your calendar” button in Member Wizard.</p>`;
-
-    // Also open the calendar page
-    window.open(url, "_blank");
 }
 </script>
 
