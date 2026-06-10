@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>U3A Lecture Parser</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 40px; max-width: 750px; }
+textarea { width: 100%; height: 150px; }
+button { padding: 10px 20px; margin-top: 10px; }
+#output { margin-top: 20px; padding: 10px; background: #eef; }
+</style>
+</head>
+<body>
+
+<h2>U3A Lecture Header Parser</h2>
+
+<p>Paste the TOP of the lecture description here:</p>
+
+<textarea id="input"></textarea>
+<br>
+<button onclick="process()">Generate Calendar Page + Link</button>
+
+<div id="output"></div>
+
+<script>
+function process() {
+    const out = document.getElementById("output");
+    out.innerHTML = "";
+
+    const lines = document.getElementById("input").value
+        .split("\n")
+        .map(l => l.trim())
+        .filter(l => l.length > 0);
+
+    if (lines.length < 3) {
+        alert("Not enough lines provided.");
+        return;
+    }
+
+    const dateLine = lines[0];
+    const timeLineRaw = lines[1];
+    const title = lines[2];
+    const speaker = lines[3] || "";
+    const venue = "The Embassy Theatre, 10 Kent Terrace";
+
+    const timeLine = timeLineRaw
+        .replace(/[–—‑−]/g, "-")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const currentYear = new Date().getFullYear();
+    const dateWithYear = dateLine.match(/\d{4}/)
+        ? dateLine
+        : dateLine + " " + currentYear;
+
+    const date = new Date(dateWithYear);
+    if (isNaN(date)) {
+        alert("Could not parse the date.");
+        return;
+    }
+
+    const timeMatch = timeLine.match(/(\d{1,2})[.:](\d{2})\s*-\s*(\d{1,2})[.:](\d{2})/);
+    if (!timeMatch) {
+        alert("Could not parse the time line.");
+        return;
+    }
+
+    const [, sh, sm, eh, em] = timeMatch;
+
+    const pad = n => String(n).padStart(2, "0");
+
+    const dateISO =
+        date.getFullYear() + "-" +
+        pad(date.getMonth() + 1) + "-" +
+        pad(date.getDate());
+
+    const start = pad(sh) + ":" + pad(sm);
+    const end = pad(eh) + ":" + pad(em);
+
+    const url =
+        "u3a-calendar.html?" +
+        "title=" + encodeURIComponent(title) +
+        "&speaker=" + encodeURIComponent(speaker) +
+        "&date=" + encodeURIComponent(dateISO) +
+        "&start=" + encodeURIComponent(start) +
+        "&end=" + encodeURIComponent(end) +
+        "&venue=" + encodeURIComponent(venue);
+
+    // Show the final link for copying
+    out.innerHTML =
+        `<p><strong>Your universal “Add to your calendar” link:</strong></p>
+         <p><a href="${url}" target="_blank">${url}</a></p>
+         <p>Copy this link and put it behind your “Add to your calendar” button in Member Wizard.</p>`;
+
+    // Also open the calendar page
+    window.open(url, "_blank");
+}
+</script>
+
+</body>
+</html>
