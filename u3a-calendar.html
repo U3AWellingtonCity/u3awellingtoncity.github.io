@@ -74,8 +74,16 @@ function set(id) {
 
 // Build links
 function updateLinks() {
-    const title = encodeURIComponent(document.getElementById("title").value);
-    const speaker = encodeURIComponent(document.getElementById("speaker").value);
+    const rawTitle = document.getElementById("title").value;
+    const rawSpeaker = document.getElementById("speaker").value;
+
+    // NEW: Title now includes speaker
+    const combinedTitle = rawSpeaker
+        ? `${rawTitle} (${rawSpeaker})`
+        : rawTitle;
+
+    const title = encodeURIComponent(combinedTitle);
+    const speaker = encodeURIComponent(rawSpeaker);
     const date = document.getElementById("date").value;
     const start = document.getElementById("start").value;
     const end = document.getElementById("end").value;
@@ -102,11 +110,11 @@ function updateLinks() {
 `BEGIN:VCALENDAR
 VERSION:2.0
 BEGIN:VEVENT
-SUMMARY:${decodeURIComponent(title)}
+SUMMARY:${combinedTitle}
 DTSTART:${startUTC}
 DTEND:${endUTC}
 LOCATION:${decodeURIComponent(venue)}
-DESCRIPTION:Speaker: ${decodeURIComponent(speaker)}
+DESCRIPTION:Speaker: ${rawSpeaker}
 END:VEVENT
 END:VCALENDAR`;
 
@@ -115,7 +123,7 @@ END:VCALENDAR`;
 
     document.getElementById("icsDownload").href = url;
     document.getElementById("icsDownload").download =
-        `${decodeURIComponent(title).replace(/[^a-z0-9]/gi,'_')}.ics`;
+        `${combinedTitle.replace(/[^a-z0-9]/gi,'_')}.ics`;
 }
 
 updateLinks();
