@@ -40,9 +40,14 @@ function process() {
 
     const dateLine = lines[0];
     const timeLineRaw = lines[1];
-    const title = lines[2];
-    const speaker = lines[3] || "";
+    const rawTitle = lines[2];
+    const rawSpeaker = lines[3] || "";
     const venue = "The Embassy Theatre, 10 Kent Terrace";
+
+    // NEW: Combine title + speaker
+    const combinedTitle = rawSpeaker
+        ? `${rawTitle} (${rawSpeaker})`
+        : rawTitle;
 
     const timeLine = timeLineRaw
         .replace(/[–—‑−]/g, "-")
@@ -78,13 +83,13 @@ function process() {
     const start = pad(sh) + ":" + pad(sm);
     const end = pad(eh) + ":" + pad(em);
 
-    // IMPORTANT: Use your GitHub Pages URL here
+    // GitHub Pages calendar generator
     const base = "https://u3awellingtoncity.github.io/u3a-calendar.html";
 
     const url =
         base + "?" +
-        "title=" + encodeURIComponent(title) +
-        "&speaker=" + encodeURIComponent(speaker) +
+        "title=" + encodeURIComponent(combinedTitle) +
+        "&speaker=" + encodeURIComponent(rawSpeaker) +
         "&date=" + encodeURIComponent(dateISO) +
         "&start=" + encodeURIComponent(start) +
         "&end=" + encodeURIComponent(end) +
