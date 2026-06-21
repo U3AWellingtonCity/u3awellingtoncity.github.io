@@ -1,3 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>U3A Lecture Parser</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        max-width: 700px;
+        line-height: 1.5;
+    }
+    textarea {
+        width: 100%;
+        font-size: 15px;
+        padding: 8px;
+    }
+    button {
+        margin-top: 10px;
+        padding: 10px 18px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .output a {
+        word-break: break-all;
+    }
+</style>
+</head>
+
+<body>
+<h2>U3A Lecture Parser</h2>
+<p>Paste the lecture header here (standard format):</p>
+
+<textarea id="input" rows="10" placeholder="e.g.
+
+Tuesday 23 June 2026
+10:30 - 11:45
+
+Navigating disruption, trust, technology and human rights in a changing world
+Dr Stephen Rainbow"></textarea>
+
+<br>
+<button onclick="parse()">Generate Calendar Links</button>
+
+<div id="output" class="output" style="margin-top:20px;"></div>
+
 <script>
 function parse() {
     const input = document.getElementById("input").value;
@@ -89,3 +135,6 @@ The Embassy Theatre, 10 Kent Terrace</textarea></p>
     `;
 }
 </script>
+
+</body>
+</html>
