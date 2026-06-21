@@ -11,6 +11,16 @@
         line-height: 1.6;
         font-size: 18px;
     }
+    .container {
+        border: 2px solid #ccc;
+        padding: 25px;
+        border-radius: 10px;
+        background: #fafafa;
+    }
+    .logo {
+        max-width: 180px;
+        margin-bottom: 20px;
+    }
     .link {
         font-size: 22px;
         font-weight: bold;
@@ -21,13 +31,25 @@
         font-size: 16px;
         margin-top: 20px;
     }
+    .back {
+        margin-top: 25px;
+        display: inline-block;
+        font-size: 18px;
+    }
 </style>
 </head>
 
 <body>
+
+<img src="LOGO_U3A_Colour.jpg" alt="U3A Logo" class="logo">
+
+<div class="container">
 <h2>Choose your calendar</h2>
 
 <div id="output"></div>
+
+<a href="u3a-parser-v2.html" class="back">← Back</a>
+</div>
 
 <script>
 function fmt(d) {
