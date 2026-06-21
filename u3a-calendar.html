@@ -34,7 +34,13 @@
       padding: 15px;
       background: #f3f3f3;
       border-radius: 6px;
-      white-space: pre-wrap;
+    }
+    .output textarea {
+      width: 100%;
+      height: 140px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 0.9rem;
     }
   </style>
 </head>
@@ -61,4 +67,78 @@
   <label>Description</label>
   <textarea id="description" rows="4" placeholder="Optional description"></textarea>
 
-  <button onclick="generate()">Generate Calendar
+  <button onclick="generate()">Generate Calendar Links</button>
+
+  <div id="output" class="output"></div>
+
+  <script>
+    function generate() {
+      const title = document.getElementById("title").value.trim();
+      const speaker = document.getElementById("speaker").value.trim();
+      const date = document.getElementById("date").value.trim();
+      const startTime = document.getElementById("start").value.trim();
+      const endTime = document.getElementById("end").value.trim();
+      const description = document.getElementById("description").value.trim();
+
+      if (!title || !speaker || !date || !startTime || !endTime) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      // Event title with U3A prefix and speaker
+      const eventTitle = `U3A – ${title} (${speaker})`;
+
+      // Build start/end in UTC for Google Calendar
+      const start = new Date(`${date}T${startTime}:00+12:00`)
+        .toISOString()
+        .replace(/[-:]/g, "")
+        .replace(".000Z", "Z");
+
+      const end = new Date(`${date}T${endTime}:00+12:00`)
+        .toISOString()
+        .replace(/[-:]/g, "")
+        .replace(".000Z", "Z");
+
+      // Google Calendar URL
+      const googleUrl =
+        "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+        `&text=${encodeURIComponent(eventTitle)}` +
+        `&dates=${start}/${end}` +
+        `&location=${encodeURIComponent("The Embassy Theatre, 10 Kent Terrace")}` +
+        `&details=${encodeURIComponent(description)}`;
+
+      // ICS content
+      const icsContent =
+        "BEGIN:VCALENDAR\n" +
+        "VERSION:2.0\n" +
+        "BEGIN:VEVENT\n" +
+        `SUMMARY:${eventTitle}\n` +
+        `DTSTART:${start}\n` +
+        `DTEND:${end}\n` +
+        "LOCATION:The Embassy Theatre, 10 Kent Terrace\n" +
+        `DESCRIPTION:${description}\n` +
+        "END:VEVENT\n" +
+        "END:VCALENDAR";
+
+      // Data URL for download
+      const icsBase64 = btoa(unescape(encodeURIComponent(icsContent)));
+      const icsHref = `data:text/calendar;base64,${icsBase64}`;
+
+      // Email snippet for you to copy
+      const emailSnippet =
+`Add to your calendar:
+• Google Calendar: ${googleUrl}
+• Other calendars: please use the attached file "u3a-lecture.ics"`;
+
+      document.getElementById("output").innerHTML =
+        `<strong>Test the Google Calendar link:</strong><br>` +
+        `<a href="${googleUrl}" target="_blank" rel="noopener">Open in Google Calendar</a><br><br>` +
+        `<strong>Download ICS file to attach to your email:</strong><br>` +
+        `<a download="u3a-lecture.ics" href="${icsHref}">Download u3a-lecture.ics</a><br><br>` +
+        `<strong>Email snippet (copy this into your weekly email):</strong><br>` +
+        `<textarea readonly>${emailSnippet}</textarea>`;
+    }
+  </script>
+
+</body>
+</html>
