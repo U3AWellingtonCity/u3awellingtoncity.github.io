@@ -1,111 +1,91 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>U3A Lecture Parser</title>
-<style>
-  body { font-family: Arial, sans-serif; margin: 40px; max-width: 700px; }
-  textarea, input { width: 100%; padding: 8px; margin-top: 10px; }
-  button { padding: 10px 15px; margin-top: 15px; cursor: pointer; }
-  .output { margin-top: 25px; padding: 15px; background: #f3f3f3; border-radius: 6px; }
-  .output textarea { width: 100%; height: 140px; font-family: monospace; }
-</style>
-</head>
-
-<body>
-
-<h2>U3A Lecture Parser</h2>
-
-<p>Paste the top lines of the lecture description here:</p>
-
-<textarea id="input" rows="6" placeholder="e.g.
-Navigating disruption, trust, technology and human rights in a changing world
-Dr Stephen Rainbow
-Tuesday 23 June, 10.30–11.45am"></textarea>
-
-<button onclick="parse()">Generate Calendar Links</button>
-
-<div id="output" class="output"></div>
-
 <script>
 function parse() {
-  const text = document.getElementById("input").value.trim();
-  if (!text) { alert("Please paste the lecture header."); return; }
+    const input = document.getElementById("input").value;
 
-  const lines = text.split("\n").map(l => l.trim()).filter(l => l);
+    // Split into lines but KEEP blank lines
+    const rawLines = input.split('\n').map(l => l.trim());
 
-  const title = lines[0];
-  const speaker = lines[1];
+    // Extract the four meaningful lines in your standard format
+    const dateLine = rawLines.find(l => l !== '');
+    const timeLine = rawLines.slice(rawLines.indexOf(dateLine) + 1).find(l => l !== '');
+    const title = rawLines.slice(rawLines.indexOf(timeLine) + 1).find(l => l !== '');
+    const speaker = rawLines.slice(rawLines.indexOf(title) + 1).find(l => l !== '');
 
-  // Extract date + time from line 3
-  const dateLine = lines[2];
+    // --- Parse date ---
+    const dateMatch = dateLine.match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
+    if (!dateMatch) {
+        document.getElementById("output").innerHTML = "<p style='color:red;'>Could not read the date line.</p>";
+        return;
+    }
 
-  // Date
-  const dateMatch = dateLine.match(/(\d{1,2})\s+([A-Za-z]+)\s*,?\s*(\d{4})?/);
-  const day = dateMatch[1];
-  const monthName = dateMatch[2];
-  const year = dateMatch[3] || new Date().getFullYear();
+    const day = dateMatch[1];
+    const monthName = dateMatch[2];
+    const year = dateMatch[3];
 
-  const monthIndex = {
-    January:1, February:2, March:3, April:4, May:5, June:6,
-    July:7, August:8, September:9, October:10, November:11, December:12
-  }[monthName];
+    const monthMap = {
+        January: 0, February: 1, March: 2, April: 3, May: 4, June: 5,
+        July: 6, August: 7, September: 8, October: 9, November: 10, December: 11
+    };
 
-  const date = `${year}-${String(monthIndex).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+    const month = monthMap[monthName];
+    const dateObj = new Date(year, month, day);
 
-  // Time
- const timeMatch = dateLine.match(/(\d{1,2}[:\.]\d{2})\s*[\u002D\u2010-\u2015]\s*(\d{1,2}[:\.]\d{2})/);
-  const startTime = timeMatch[1].replace(".", ":");
-  const endTime = timeMatch[2].replace(".", ":");
+    // --- Parse time ---
+    const timeMatch = timeLine.match(/(\d{1,2}[:\.]\d{2})\s*[\u002D\u2010-\u2015]\s*(\d{1,2}[:\.]\d{2})/);
+    if (!timeMatch) {
+        document.getElementById("output").innerHTML = "<p style='color:red;'>Could not read the time line.</p>";
+        return;
+    }
 
-  // Build event title
-  const eventTitle = `U3A – ${title} (${speaker})`;
+    const startTime = timeMatch[1].replace('.', ':');
+    const endTime = timeMatch[2].replace('.', ':');
 
-  // Convert to UTC for Google Calendar
-  const startUTC = new Date(`${date}T${startTime}:00+12:00`)
-      .toISOString().replace(/[-:]/g,"").replace(".000Z","Z");
+    const [sh, sm] = startTime.split(':').map(Number);
+    const [eh, em] = endTime.split(':').map(Number);
 
-  const endUTC = new Date(`${date}T${endTime}:00+12:00`)
-      .toISOString().replace(/[-:]/g,"").replace(".000Z","Z");
+    const startDate = new Date(year, month, day, sh, sm);
+    const endDate = new Date(year, month, day, eh, em);
 
-  // Google Calendar link
-  const googleUrl =
-    "https://calendar.google.com/calendar/render?action=TEMPLATE" +
-    `&text=${encodeURIComponent(eventTitle)}` +
-    `&dates=${startUTC}/${endUTC}` +
-    `&location=${encodeURIComponent("The Embassy Theatre, 10 Kent Terrace")}`;
+    // --- Format for Google Calendar ---
+    function fmt(d) {
+        return d.toISOString().replace(/[-:]/g, "").split('.')[0] + "Z";
+    }
 
-  // ICS file
-  const ics =
-    "BEGIN:VCALENDAR\n" +
-    "VERSION:2.0\n" +
-    "BEGIN:VEVENT\n" +
-    `SUMMARY:${eventTitle}\n` +
-    `DTSTART:${startUTC}\n` +
-    `DTEND:${endUTC}\n` +
-    "LOCATION:The Embassy Theatre, 10 Kent Terrace\n" +
-    "END:VEVENT\n" +
-    "END:VCALENDAR";
+    const gcal =
+        "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+        "&text=" + encodeURIComponent(title) +
+        "&dates=" + fmt(startDate) + "/" + fmt(endDate) +
+        "&details=" + encodeURIComponent("Speaker: " + speaker) +
+        "&location=" + encodeURIComponent("The Embassy Theatre, 10 Kent Terrace");
 
-  const icsBase64 = btoa(unescape(encodeURIComponent(ics)));
-  const icsHref = `data:text/calendar;base64,${icsBase64}`;
+    // --- Build ICS file ---
+    const ics =
+`BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:${title}
+DTSTART:${fmt(startDate)}
+DTEND:${fmt(endDate)}
+LOCATION:The Embassy Theatre, 10 Kent Terrace
+DESCRIPTION:Speaker: ${speaker}
+END:VEVENT
+END:VCALENDAR`;
 
-  const emailSnippet =
-`Add to your calendar:
-• Google Calendar: ${googleUrl}
-• Other calendars: please use the attached file "u3a-lecture.ics"`;
+    const icsBlob = new Blob([ics], { type: "text/calendar" });
+    const icsUrl = URL.createObjectURL(icsBlob);
 
-  document.getElementById("output").innerHTML =
-    `<strong>Google Calendar link:</strong><br>
-     <a href="${googleUrl}" target="_blank">Open in Google Calendar</a><br><br>
+    // --- Output ---
+    document.getElementById("output").innerHTML = `
+        <p><strong>Google Calendar link:</strong><br>
+        <a href="${gcal}" target="_blank">Add to Google Calendar</a></p>
 
-     <strong>Download ICS file:</strong><br>
-     <a download="u3a-lecture.ics" href="${icsHref}">Download u3a-lecture.ics</a><br><br>
+        <p><strong>Download ICS file:</strong><br>
+        <a href="${icsUrl}" download="u3a-event.ics">Download .ics file</a></p>
 
-     <strong>Email snippet:</strong><br>
-     <textarea readonly>${emailSnippet}</textarea>`;
+        <p><strong>Email snippet:</strong><br>
+        <textarea rows="4" style="width:100%;">${title} — ${speaker}
+${dateLine}, ${startTime}–${endTime}
+The Embassy Theatre, 10 Kent Terrace</textarea></p>
+    `;
 }
 </script>
-
-</body>
-</html>
