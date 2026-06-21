@@ -83,29 +83,4 @@ function parse() {
     `SUMMARY:${eventTitle}\n` +
     `DTSTART:${startUTC}\n` +
     `DTEND:${endUTC}\n` +
-    "LOCATION:The Embassy Theatre, 10 Kent Terrace\n" +
-    "END:VEVENT\n" +
-    "END:VCALENDAR";
-
-  const icsBase64 = btoa(unescape(encodeURIComponent(ics)));
-  const icsHref = `data:text/calendar;base64,${icsBase64}`;
-
-  const emailSnippet =
-`Add to your calendar:
-• Google Calendar: ${googleUrl}
-• Other calendars: please use the attached file "u3a-lecture.ics"`;
-
-  document.getElementById("output").innerHTML =
-    `<strong>Google Calendar link:</strong><br>
-     <a href="${googleUrl}" target="_blank">Open in Google Calendar</a><br><br>
-
-     <strong>Download ICS file:</strong><br>
-     <a download="u3a-lecture.ics" href="${icsHref}">Download u3a-lecture.ics</a><br><br>
-
-     <strong>Email snippet:</strong><br>
-     <textarea readonly>${emailSnippet}</textarea>`;
-}
-</script>
-
-</body>
-</html>
+    "LOCATION:The Embassy Theatre, 10 Kent Terrace
