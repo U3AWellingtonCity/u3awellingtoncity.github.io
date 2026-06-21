@@ -1,133 +1,64 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>U3A Universal Calendar Generator</title>
-<style>
-body { font-family: Arial, sans-serif; margin: 40px; max-width: 750px; }
-header {
-    background: #003366;
-    padding: 15px 20px;
-    margin: -40px -40px 30px -40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-header img {
-    height: 90px;
-}
-input { width: 100%; padding: 8px; margin: 6px 0; }
-.output { margin-top: 20px; padding: 10px; background: #f0f0f0; }
-a { display: block; margin: 8px 0; font-size: 1.1em; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>U3A Calendar Link Generator</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      max-width: 700px;
+      line-height: 1.6;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 15px;
+      display: block;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      font-size: 1rem;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 15px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .output {
+      margin-top: 30px;
+      padding: 15px;
+      background: #f3f3f3;
+      border-radius: 6px;
+      white-space: pre-wrap;
+    }
+  </style>
 </head>
+
 <body>
 
-<header>
-    <img src="LOGO_U3A_Colour.jpg" alt="U3A Wellington City Logo">
-</header>
+  <h2>U3A Lecture – Calendar Link Generator</h2>
 
-<form id="form">
+  <label>Lecture Title</label>
+  <input id="title" placeholder="e.g., Hollywood and Beyond" />
 
-<label>Title:</label>
-<input id="title">
+  <label>Speaker</label>
+  <input id="speaker" placeholder="e.g., Dame Miranda Harcourt and Stuart McKenzie" />
 
-<label>Speaker:</label>
-<input id="speaker">
+  <label>Date (YYYY-MM-DD)</label>
+  <input id="date" placeholder="2026-08-14" />
 
-<label>Date (YYYY-MM-DD):</label>
-<input id="date">
+  <label>Start Time (24h, NZ time)</label>
+  <input id="start" placeholder="10:30" />
 
-<label>Start time (HH:MM):</label>
-<input id="start">
+  <label>End Time (24h, NZ time)</label>
+  <input id="end" placeholder="12:00" />
 
-<label>End time (HH:MM):</label>
-<input id="end">
+  <label>Description</label>
+  <textarea id="description" rows="4" placeholder="Optional description"></textarea>
 
-<label>Venue:</label>
-<input id="venue" value="The Embassy Theatre, 10 Kent Terrace">
-
-</form>
-
-<hr>
-
-<div class="output">
-<h3>Add to your calendar</h3>
-
-<a id="google" href="#" target="_blank">➤ Add to Google Calendar</a>
-<a id="outlook" href="#" target="_blank">➤ Add to Outlook / Office 365</a>
-<a id="yahoo" href="#" target="_blank">➤ Add to Yahoo Calendar</a>
-<a id="icsDownload" href="#" download="event.ics">➤ Download ICS file (Apple / Android / Desktop)</a>
-
-</div>
-
-<script>
-// Read URL parameters
-const params = new URLSearchParams(window.location.search);
-
-function set(id) {
-    const el = document.getElementById(id);
-    if (params.has(id)) el.value = params.get(id);
-}
-
-["title", "speaker", "date", "start", "end", "venue"].forEach(set);
-
-// Build links
-function updateLinks() {
-    const rawTitle = document.getElementById("title").value;
-    const rawSpeaker = document.getElementById("speaker").value;
-
-    // NEW: Title now includes speaker
-    const combinedTitle = rawSpeaker
-        ? `${rawTitle} (${rawSpeaker})`
-        : rawTitle;
-
-    const title = encodeURIComponent(combinedTitle);
-    const speaker = encodeURIComponent(rawSpeaker);
-    const date = document.getElementById("date").value;
-    const start = document.getElementById("start").value;
-    const end = document.getElementById("end").value;
-    const venue = encodeURIComponent(document.getElementById("venue").value);
-
-    if (!date || !start || !end) return;
-
-    const startLocal = `${date}T${start}`;
-    const endLocal = `${date}T${end}`;
-
-    const startUTC = new Date(startLocal).toISOString().replace(/[-:]/g, "").replace(/\.\d+Z/, "Z");
-    const endUTC = new Date(endLocal).toISOString().replace(/[-:]/g, "").replace(/\.\d+Z/, "Z");
-
-    document.getElementById("google").href =
-        `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startUTC}/${endUTC}&details=Speaker:%20${speaker}&location=${venue}`;
-
-    document.getElementById("outlook").href =
-        `https://outlook.live.com/calendar/0/deeplink/compose?subject=${title}&body=Speaker:%20${speaker}&location=${venue}&startdt=${startLocal}&enddt=${endLocal}`;
-
-    document.getElementById("yahoo").href =
-        `https://calendar.yahoo.com/?v=60&view=d&type=20&title=${title}&st=${startUTC}&et=${endUTC}&desc=Speaker:%20${speaker}&in_loc=${venue}`;
-
-    const ics =
-`BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-SUMMARY:${combinedTitle}
-DTSTART:${startUTC}
-DTEND:${endUTC}
-LOCATION:${decodeURIComponent(venue)}
-DESCRIPTION:Speaker: ${rawSpeaker}
-END:VEVENT
-END:VCALENDAR`;
-
-    const blob = new Blob([ics], { type: "text/calendar" });
-    const url = URL.createObjectURL(blob);
-
-    document.getElementById("icsDownload").href = url;
-    document.getElementById("icsDownload").download =
-        `${combinedTitle.replace(/[^a-z0-9]/gi,'_')}.ics`;
-}
-
-updateLinks();
-</script>
-
-</body>
-</html>
+  <button onclick="generate()">Generate Calendar
