@@ -55,6 +55,8 @@ function parse() {
     const title = rawLines.slice(rawLines.indexOf(timeLine) + 1).find(l => l !== '');
     const speaker = rawLines.slice(rawLines.indexOf(title) + 1).find(l => l !== '');
 
+    const fullTitle = "U3A – " + title;
+
     const dateMatch = dateLine.match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
     if (!dateMatch) {
         document.getElementById("output").innerHTML = "<p style='color:red;'>Could not read the date line.</p>";
@@ -93,14 +95,14 @@ function parse() {
 
     const google =
         "https://calendar.google.com/calendar/render?action=TEMPLATE" +
-        "&text=" + encodeURIComponent(title) +
+        "&text=" + encodeURIComponent(fullTitle) +
         "&dates=" + fmt(startDate) + "/" + fmt(endDate) +
         "&details=" + encodeURIComponent("Speaker: " + speaker) +
         "&location=" + encodeURIComponent("The Embassy Theatre, 10 Kent Terrace");
 
     const outlook =
         "https://outlook.live.com/calendar/0/deeplink/compose?subject=" +
-        encodeURIComponent(title) +
+        encodeURIComponent(fullTitle) +
         "&body=" + encodeURIComponent("Speaker: " + speaker) +
         "&startdt=" + startDate.toISOString() +
         "&enddt=" + endDate.toISOString() +
@@ -112,7 +114,7 @@ function parse() {
 `BEGIN:VCALENDAR
 VERSION:2.0
 BEGIN:VEVENT
-SUMMARY:${title}
+SUMMARY:${fullTitle}
 DTSTART:${fmt(startDate)}
 DTEND:${fmt(endDate)}
 LOCATION:The Embassy Theatre, 10 Kent Terrace
@@ -125,7 +127,7 @@ END:VCALENDAR`
 `BEGIN:VCALENDAR
 VERSION:2.0
 BEGIN:VEVENT
-SUMMARY:${title}
+SUMMARY:${fullTitle}
 DTSTART:${fmt(startDate)}
 DTEND:${fmt(endDate)}
 LOCATION:The Embassy Theatre, 10 Kent Terrace
