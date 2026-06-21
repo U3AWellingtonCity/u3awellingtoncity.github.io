@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Choose your calendar</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        max-width: 700px;
+        line-height: 1.6;
+        font-size: 18px;
+    }
+    .link {
+        font-size: 22px;
+        font-weight: bold;
+        margin: 12px 0;
+        display: block;
+    }
+    .small {
+        font-size: 16px;
+        margin-top: 20px;
+    }
+</style>
+</head>
+
+<body>
+<h2>Choose your calendar</h2>
+
+<div id="output"></div>
+
+<script>
+function fmt(d) {
+    return d.toISOString().replace(/[-:]/g, "").split('.')[0] + "Z";
+}
+
+const params = new URLSearchParams(window.location.search);
+const encoded = params.get("event");
+
+if (!encoded) {
+    document.getElementById("output").innerHTML = "<p style='color:red;'>No event data found.</p>";
+} else {
+    const event = JSON.parse(decodeURIComponent(encoded));
+
+    const startDate = new Date(event.start);
+    const endDate = new Date(event.end);
+
+    const google =
+        "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+        "&text=" + encodeURIComponent(event.title) +
+        "&dates=" + fmt(startDate) + "/" + fmt(endDate) +
+        "&details=" + encodeURIComponent("Speaker: " + event.speaker) +
+        "&location=" + encodeURIComponent("The Embassy Theatre, 10 Kent Terrace");
+
+    const outlook =
+        "https://outlook.live.com/calendar/0/deeplink/compose?subject=" +
+        encodeURIComponent(event.title) +
+        "&body=" + encodeURIComponent("Speaker: " + event.speaker) +
+        "&startdt=" + startDate.toISOString() +
+        "&enddt=" + endDate.toISOString() +
+        "&location=" + encodeURIComponent("The Embassy Theatre, 10 Kent Terrace");
+
+    const apple =
+        "data:text/calendar;charset=utf8," +
+        encodeURIComponent(
+`BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:${event.title}
+DTSTART:${fmt(startDate)}
+DTEND:${fmt(endDate)}
+LOCATION:The Embassy Theatre, 10 Kent Terrace
+DESCRIPTION:Speaker: ${event.speaker}
+END:VEVENT
+END:VCALENDAR`
+        );
+
+    const ics =
+`BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:${event.title}
+DTSTART:${fmt(startDate)}
+DTEND:${fmt(endDate)}
+LOCATION:The Embassy Theatre, 10 Kent Terrace
+DESCRIPTION:Speaker: ${event.speaker}
+END:VEVENT
+END:VCALENDAR`;
+
+    const icsBlob = new Blob([ics], { type: "text/calendar" });
+    const icsUrl = URL.createObjectURL(icsBlob);
+
+    document.getElementById("output").innerHTML = `
+        <a class="link" href="${google}" target="_blank">Add to Google Calendar</a>
+        <a class="link" href="${outlook}" target="_blank">Add to Outlook Calendar</a>
+        <a class="link" href="${apple}" download="event.ics">Add to Apple Calendar</a>
+
+        <div class="small">
+            <a href="${icsUrl}" download="u3a-event.ics">Download .ics file (optional)</a>
+        </div>
+    `;
+}
+</script>
+
+</body>
+</html>
